@@ -15,10 +15,24 @@ except:
 
 from docutils.core import publish_cmdline, default_description
 from docutils_tinyhtml import Writer
+from docutils.parsers.rst import Parser as RstParser
 from recommonmark.parser import CommonMarkParser
+from recommonmark.transform import AutoStructify
 
 description = ('Generates Tiny HTML documents from standalone '
                'MarkDown sources.  ' + default_description)
 
-publish_cmdline(parser=CommonMarkParser(), writer=Writer(), writer_name='html',
-                description=description)
+
+class Env(object):
+    srcdir = ''
+
+
+class ExtendCommonMarkParser(CommonMarkParser):
+    settings_spec = RstParser.settings_spec
+
+    def get_transforms(self):
+        return CommonMarkParser.get_transforms(self) + [AutoStructify]
+
+
+publish_cmdline(parser=ExtendCommonMarkParser(), writer=Writer(), writer_name='html',
+                description=description, settings_overrides={'env': Env()})
